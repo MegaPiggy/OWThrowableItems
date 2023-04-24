@@ -40,7 +40,7 @@ namespace YeetMod
 
             owRigidbody._attachedForceDetector._activeVolumes = Locator.GetPlayerBody()._attachedForceDetector._activeVolumes.ToList();
             owRigidbody._attachedFluidDetector._activeVolumes = Locator.GetPlayerBody()._attachedFluidDetector._activeVolumes.ToList();
-            owRigidbody._attachedFluidDetector._buoyancy = Locator.GetPlayerBody()._attachedFluidDetector._buoyancy;
+            owRigidbody._attachedFluidDetector._buoyancy = Locator.GetProbe().GetOWRigidbody()._attachedFluidDetector._buoyancy;
             owRigidbody._attachedFluidDetector._splashEffects = Locator.GetProbe().GetOWRigidbody()._attachedFluidDetector._splashEffects;
 
             owRigidbody._rigidbody.angularDrag = 5;
