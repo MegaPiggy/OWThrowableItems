@@ -13,7 +13,7 @@ namespace YeetMod
 
         public static ItemYeetSocket Create(OWItem item, Vector3 startingPosition, float startingVelocity)
         {
-            var socketObj = new GameObject($"{item.name}_Body");
+            var socketObj = new GameObject("ItemYeetBody");
             socketObj.SetActive(false);
             socketObj.transform.position = startingPosition;
             var socket = socketObj.AddComponent<ItemYeetSocket>();
@@ -38,11 +38,8 @@ namespace YeetMod
             if (wasOnInteractible) attachedItem.gameObject.layer = LayerMask.NameToLayer("Default");
             attachedItem.onPickedUp += OnPickUpItem;
 
-            foreach (var volume in Locator.GetPlayerBody()._attachedForceDetector._activeVolumes)
-            {
-                owRigidbody._attachedForceDetector.AddVolume(volume);
-                owRigidbody._attachedFluidDetector.AddVolume(volume);
-            }
+            foreach (var volume in Locator.GetPlayerBody()._attachedForceDetector._activeVolumes) owRigidbody._attachedForceDetector.AddVolume(volume);
+            foreach (var volume in Locator.GetPlayerBody()._attachedFluidDetector._activeVolumes) owRigidbody._attachedFluidDetector.AddVolume(volume);
             owRigidbody._attachedFluidDetector._buoyancy = Locator.GetProbe().GetOWRigidbody()._attachedFluidDetector._buoyancy;
             owRigidbody._attachedFluidDetector._splashEffects = Locator.GetProbe().GetOWRigidbody()._attachedFluidDetector._splashEffects;
 
