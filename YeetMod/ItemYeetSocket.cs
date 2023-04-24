@@ -38,8 +38,11 @@ namespace YeetMod
             if (wasOnInteractible) attachedItem.gameObject.layer = LayerMask.NameToLayer("Default");
             attachedItem.onPickedUp += OnPickUpItem;
 
-            owRigidbody._attachedForceDetector._activeVolumes = Locator.GetPlayerBody()._attachedForceDetector._activeVolumes.ToList();
-            owRigidbody._attachedFluidDetector._activeVolumes = Locator.GetPlayerBody()._attachedFluidDetector._activeVolumes.ToList();
+            foreach (var volume in Locator.GetPlayerBody()._attachedForceDetector._activeVolumes)
+            {
+                owRigidbody._attachedForceDetector.AddVolume(volume);
+                owRigidbody._attachedFluidDetector.AddVolume(volume);
+            }
             owRigidbody._attachedFluidDetector._buoyancy = Locator.GetProbe().GetOWRigidbody()._attachedFluidDetector._buoyancy;
             owRigidbody._attachedFluidDetector._splashEffects = Locator.GetProbe().GetOWRigidbody()._attachedFluidDetector._splashEffects;
 
