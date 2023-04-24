@@ -33,6 +33,7 @@ namespace YeetMod
             var yeetSpeed = heldButtonTime <= 0.25f ? 0 : Mathf.Clamp(heldButtonTime * 20, 0, 50);
             var playerCameraTransform = Locator.GetPlayerCamera().transform;
             var socket = ItemYeetSocket.Create(itemTool.GetHeldItem(), playerCameraTransform.position + playerCameraTransform.forward * 2, yeetSpeed);
+            socket.transform.rotation = playerCameraTransform.rotation;
             itemTool.DropItemInstantly(null, socket.transform);
         }
     }
