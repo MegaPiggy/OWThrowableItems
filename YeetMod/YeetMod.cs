@@ -27,10 +27,11 @@ namespace YeetMod
         private static void Yeet(float heldButtonTime)
         {
             if (Locator.GetToolModeSwapper().GetToolMode() != ToolMode.Item) return;
+            var itemTool = Locator.GetToolModeSwapper().GetItemCarryTool();
+            if (itemTool.GetHeldItem().IsAnimationPlaying()) return;
 
             var yeetSpeed = heldButtonTime <= 0.25f ? 0 : Mathf.Clamp(heldButtonTime * 20, 0, 50);
             var playerCameraTransform = Locator.GetPlayerCamera().transform;
-            var itemTool = Locator.GetToolModeSwapper().GetItemCarryTool();
             var socket = ItemYeetSocket.Create(itemTool.GetHeldItem(), playerCameraTransform.position + playerCameraTransform.forward * 2, yeetSpeed);
             itemTool.DropItemInstantly(null, socket.transform);
         }
