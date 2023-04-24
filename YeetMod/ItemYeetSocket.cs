@@ -30,6 +30,7 @@ namespace YeetMod
 
             owRigidbody = gameObject.AddComponent<OWRigidbody>();
             gameObject.AddComponent<SphereCollider>();
+            gameObject.AddComponent<SphereShape>()._collisionMode = Shape.CollisionMode.Detector;
             gameObject.AddComponent<DynamicForceDetector>();
             gameObject.AddComponent<DynamicFluidDetector>();
 
