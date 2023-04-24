@@ -14,7 +14,7 @@ namespace YeetMod
 
         public static ItemYeetSocket Create(OWItem item, Vector3 startingPosition, float startingVelocity)
         {
-            var socketObj = new GameObject("ItemYeetBody");
+            var socketObj = new GameObject($"{item.name}_Body");
             socketObj.SetActive(false);
             socketObj.transform.position = startingPosition;
             var socket = socketObj.AddComponent<ItemYeetSocket>();
