@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+﻿using System.Linq;
 using UnityEngine;
 
 namespace YeetMod
@@ -6,20 +6,22 @@ namespace YeetMod
     public class ItemYeetSocket : MonoBehaviour
     {
         private OWItem attachedItem;
-        private bool wasOnInteractible;
+        private float initialVelocity;
 
-        private OWRigidbody oWRigidbody;
-        private float initialVelocity = 0;
+        private OWRigidbody owRigidbody;
+        private bool wasOnInteractible;
 
 
         public static ItemYeetSocket Create(OWItem item, Vector3 startingPosition, float startingVelocity)
         {
             var socketObj = new GameObject("ItemYeetBody");
+            socketObj.SetActive(false);
             socketObj.transform.position = startingPosition;
-            var newSocket = socketObj.AddComponent<ItemYeetSocket>();
-            newSocket.attachedItem = item;
-            newSocket.initialVelocity = startingVelocity;
-            return newSocket;
+            var socket = socketObj.AddComponent<ItemYeetSocket>();
+            socket.attachedItem = item;
+            socket.initialVelocity = startingVelocity;
+            socketObj.SetActive(true);
+            return socket;
         }
 
         private void Awake()
@@ -27,26 +29,22 @@ namespace YeetMod
             gameObject.layer = LayerMask.NameToLayer("AdvancedDetector");
             gameObject.tag = "DynamicPropDetector";
 
-            oWRigidbody = gameObject.AddComponent<OWRigidbody>();
+            owRigidbody = gameObject.AddComponent<OWRigidbody>();
             gameObject.AddComponent<SphereCollider>();
             gameObject.AddComponent<DynamicForceDetector>();
             gameObject.AddComponent<DynamicFluidDetector>();
-        }
 
-        private void Start()
-        {
             wasOnInteractible = attachedItem.gameObject.layer == LayerMask.NameToLayer("Interactible");
             if (wasOnInteractible) attachedItem.gameObject.layer = LayerMask.NameToLayer("Default");
             attachedItem.onPickedUp += OnPickUpItem;
 
-            oWRigidbody._childColliders = gameObject.GetComponentsInChildren<Collider>();
-            oWRigidbody._attachedForceDetector._activeVolumes = new List<EffectVolume>(Locator.GetPlayerBody()._attachedForceDetector._activeVolumes);
-            oWRigidbody._attachedFluidDetector._activeVolumes = new List<EffectVolume>(Locator.GetPlayerBody()._attachedFluidDetector._activeVolumes);
-            oWRigidbody._attachedFluidDetector._buoyancy = Locator.GetPlayerBody()._attachedFluidDetector._buoyancy;
+            owRigidbody._attachedForceDetector._activeVolumes = Locator.GetPlayerBody()._attachedForceDetector._activeVolumes.ToList();
+            owRigidbody._attachedFluidDetector._activeVolumes = Locator.GetPlayerBody()._attachedFluidDetector._activeVolumes.ToList();
+            owRigidbody._attachedFluidDetector._buoyancy = Locator.GetPlayerBody()._attachedFluidDetector._buoyancy;
 
-            oWRigidbody._rigidbody.angularDrag = 5;
-            oWRigidbody.SetMass(0.001f);
-            oWRigidbody.SetVelocity(Locator.GetPlayerBody().GetPointVelocity(gameObject.transform.position) + Locator.GetPlayerCamera().gameObject.transform.forward * initialVelocity);
+            owRigidbody._rigidbody.angularDrag = 5;
+            owRigidbody.SetMass(0.001f);
+            owRigidbody.SetVelocity(Locator.GetPlayerBody().GetPointVelocity(transform.position) + Locator.GetPlayerCamera().transform.forward * initialVelocity);
         }
 
         private void OnPickUpItem(OWItem item)
