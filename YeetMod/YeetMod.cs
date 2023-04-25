@@ -1,17 +1,27 @@
-﻿using OWML.ModHelper;
+﻿using HarmonyLib;
+using OWML.ModHelper;
+using System.Reflection;
 using UnityEngine;
 
 namespace YeetMod
 {
     public class YeetMod : ModBehaviour
     {
-        private const float doublePressTimeLimit = 0.5f;
+        private static float
+            doublePressTimeLimit = 0.5f,
+            itemDropTimeLimit = 0.25f,
+            yeetSpeedIncreaseRate = 20,
+            yeetSpeedLimit = 50;
         private float lastButtonPressTime = float.NegativeInfinity;
         private bool isDoublePressing;
 
 
+        private void Awake() { Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly()); }
+
         private void Update()
         {
+            if (Locator.GetToolModeSwapper()?.GetToolMode() != ToolMode.Item) return;
+
             if (OWInput.IsNewlyPressed(InputLibrary.interact, InputMode.Character))
             {
                 if (Time.time - lastButtonPressTime <= doublePressTimeLimit) isDoublePressing = true;
@@ -22,19 +32,30 @@ namespace YeetMod
                 isDoublePressing = false;
                 Yeet(Time.time - lastButtonPressTime);
             }
+
+            if (CheckForObstructed() && !Patches.YeetPrompt.IsDisplayState(ScreenPrompt.DisplayState.GrayedOut)) Patches.YeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.GrayedOut);
+            else if (isDoublePressing && !Patches.YeetPrompt.IsDisplayState(ScreenPrompt.DisplayState.Attention)) Patches.YeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.Attention);
+            else if (!Patches.YeetPrompt.IsDisplayState(ScreenPrompt.DisplayState.Normal)) Patches.YeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.Normal);
+        }
+
+        private bool CheckForObstructed()
+        {
+            //something with ray- or spherecast, whatever goes here has to be made to possibly actually prevent a throw too but this is basically a placeholder at this point
+            return false;
         }
 
         private static void Yeet(float heldButtonTime)
         {
-            if (Locator.GetToolModeSwapper().GetToolMode() != ToolMode.Item) return;
             var itemTool = Locator.GetToolModeSwapper().GetItemCarryTool();
             if (itemTool.GetHeldItem().IsAnimationPlaying()) return;
 
-            var yeetSpeed = heldButtonTime <= 0.25f ? 0 : Mathf.Clamp(heldButtonTime * 20, 0, 50);
+            var yeetSpeed = heldButtonTime <= itemDropTimeLimit ? 0 : Mathf.Clamp(heldButtonTime * yeetSpeedIncreaseRate, 0, yeetSpeedLimit);
             var playerCameraTransform = Locator.GetPlayerCamera().transform;
             var socket = ItemYeetSocket.Create(itemTool.GetHeldItem(), playerCameraTransform.position + playerCameraTransform.forward * 2, yeetSpeed);
             socket.transform.rotation = playerCameraTransform.rotation;
             itemTool.DropItemInstantly(null, socket.transform);
+
+            Locator.GetToolModeSwapper().UnequipTool();
         }
     }
 }
