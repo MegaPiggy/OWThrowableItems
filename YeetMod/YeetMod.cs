@@ -7,6 +7,7 @@ namespace YeetMod
 {
     public class YeetMod : ModBehaviour
     {
+        // not const so theyre editable in UE
         private static float
             doublePressTimeLimit = 0.5f,
             itemDropTimeLimit = 0.25f,
@@ -16,7 +17,7 @@ namespace YeetMod
         private bool isDoublePressing;
 
 
-        private void Awake() { Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly()); }
+        private void Awake() => Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
 
         private void Update()
         {
