@@ -34,9 +34,9 @@ namespace YeetMod
                 Yeet(Time.time - lastButtonPressTime);
             }
 
-            if (CheckForObstructed() && !Patches.YeetPrompt.IsDisplayState(ScreenPrompt.DisplayState.GrayedOut)) Patches.YeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.GrayedOut);
-            else if (isDoublePressing && !Patches.YeetPrompt.IsDisplayState(ScreenPrompt.DisplayState.Attention)) Patches.YeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.Attention);
-            else if (!Patches.YeetPrompt.IsDisplayState(ScreenPrompt.DisplayState.Normal)) Patches.YeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.Normal);
+            if (CheckForObstructed()) Patches.YeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.GrayedOut);
+            else if (isDoublePressing) Patches.YeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.Attention);
+            else Patches.YeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.Normal);
         }
 
         private bool CheckForObstructed()
