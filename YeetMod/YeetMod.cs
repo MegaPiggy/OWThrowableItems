@@ -1,12 +1,11 @@
-﻿using HarmonyLib;
-using OWML.ModHelper;
-using System.Reflection;
+﻿using OWML.ModHelper;
 using UnityEngine;
 
 namespace YeetMod
 {
     public class YeetMod : ModBehaviour
     {
+        private static ScreenPrompt yeetPrompt;
         // not const so theyre editable in UE
         private static float
             doublePressTimeLimit = 0.5f,
@@ -15,34 +14,31 @@ namespace YeetMod
             yeetSpeedLimit = 50;
         private float lastButtonPressTime = float.NegativeInfinity;
         private bool isDoublePressing;
-        private ScreenPrompt yeetPrompt;
 
-
-        private void Awake() => Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
 
         private void Start()
         {
+            yeetPrompt = new(InputLibrary.interact, "<CMD> " + "<color=orange>(x2) (Hold) </color> " + "Throw Item");
+
             LoadManager.OnCompleteSceneLoad += (scene, loadScene) =>
             {
-                if (loadScene is not (OWScene.SolarSystem or OWScene.EyeOfTheUniverse)) return;
-                ModHelper.Events.Unity.FireOnNextUpdate(() =>
-                {
-                    yeetPrompt = new(InputLibrary.interact, "<CMD> " + "<color=orange>(x2) (Hold) </color> " + "Throw Item");
-                    Locator.GetPromptManager().AddScreenPrompt(yeetPrompt, PromptPosition.LowerLeft);
-                });
+                if (loadScene is OWScene.SolarSystem or OWScene.EyeOfTheUniverse) FindObjectOfType<PromptManager>().AddScreenPrompt(yeetPrompt, PromptPosition.LowerLeft);
             };
         }
 
         private void Update()
         {
             if (Locator.GetPromptManager() == null) return;
-            yeetPrompt.SetVisibility(false);
 
-            if (!OWInput.IsInputMode(InputMode.Character)) return;
-            if (Locator.GetToolModeSwapper()?.GetToolMode() != ToolMode.Item) return;
-            yeetPrompt.SetVisibility(true);
+            //since the else-if prevents the double press from starting and resolving on the same frame it's fine to put these screen prompt state changes first
+            isDoublePressing = isDoublePressing && OWInput.IsInputMode(InputMode.Character);
+            yeetPrompt.SetVisibility(OWInput.IsInputMode(InputMode.Character) && Locator.GetToolModeSwapper()?.GetToolMode() == ToolMode.Item);
+            if (yeetPrompt.IsVisible()) yeetPrompt.SetDisplayState(
+                CheckForObstructed() ? ScreenPrompt.DisplayState.GrayedOut : 
+                isDoublePressing ? ScreenPrompt.DisplayState.Attention : 
+                ScreenPrompt.DisplayState.Normal);
 
-            if (OWInput.IsNewlyPressed(InputLibrary.interact))
+            if (OWInput.IsNewlyPressed(InputLibrary.interact, InputMode.Character))
             {
                 if (Time.time - lastButtonPressTime <= doublePressTimeLimit) isDoublePressing = true;
                 lastButtonPressTime = Time.time;
@@ -52,20 +48,15 @@ namespace YeetMod
                 isDoublePressing = false;
                 Yeet(Time.time - lastButtonPressTime);
             }
-
-            if (CheckForObstructed()) yeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.GrayedOut);
-            else if (isDoublePressing) yeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.Attention);
-            else yeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.Normal);
         }
 
-        private bool CheckForObstructed()
-        {
-            //something with ray- or spherecast, whatever goes here has to be made to possibly actually prevent a throw too but this is basically a placeholder at this point
-            return false;
-        }
+        private bool CheckForObstructed() => Physics.SphereCast(new Ray(Locator.GetPlayerCamera().transform.position, Locator.GetPlayerCamera().transform.forward), 0.5f, 2, OWLayerMask.physicalMask);
 
         private static void Yeet(float heldButtonTime)
         {
+            //this is directly tied to the check result and we set display state first so this works fine as a return condition to prevent dropping items through walls
+            if (yeetPrompt.IsDisplayState(ScreenPrompt.DisplayState.GrayedOut)) return;
+
             var itemTool = Locator.GetToolModeSwapper().GetItemCarryTool();
             if (itemTool.GetHeldItem().IsAnimationPlaying()) return;
 

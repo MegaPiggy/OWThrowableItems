@@ -4,12 +4,11 @@ namespace YeetMod
 {
     public class ItemYeetSocket : MonoBehaviour
     {
-        private OWItem attachedItem;
-        private float initialVelocity;
-
         private OWRigidbody owRigidbody;
-        public GameObject detectorObj = new("YeetDetector");
+        private GameObject detectorObj = new("YeetDetector");
+        private OWItem attachedItem;
         private bool switchedFromInteractible;
+        private float initialVelocity;
 
 
         public static ItemYeetSocket Create(OWItem item, Vector3 startingPosition, float startingVelocity)
@@ -32,9 +31,9 @@ namespace YeetMod
 
             detectorObj.transform.SetParent(transform, false);
             owRigidbody = gameObject.AddComponent<OWRigidbody>();
+            AddShapesAndColliders();
             detectorObj.AddComponent<DynamicForceDetector>();
             detectorObj.AddComponent<DynamicFluidDetector>();
-            AddShapesAndColliders();
             detectorObj.transform.SetParent(attachedItem.transform, false);
 
             attachedItem.onPickedUp += OnPickUpItem;
@@ -54,8 +53,8 @@ namespace YeetMod
             switch (attachedItem._type)
             {
                 case ItemType.Scroll:
-                    var scrollCollider = detectorObj.AddComponent<CapsuleCollider>();
                     var scrollShape = detectorObj.AddComponent<CapsuleShape>();
+                    var scrollCollider = detectorObj.AddComponent<CapsuleCollider>();
                     scrollCollider.height = 0.8f;
                     scrollCollider.radius = 0.2f;
                     scrollShape.CopySettingsFromCollider();
@@ -66,8 +65,8 @@ namespace YeetMod
                     var warpCore = attachedItem as WarpCoreItem;
                     if (warpCore._warpCoreType is WarpCoreType.Vessel or WarpCoreType.VesselBroken)
                     {
-                        var awcCollider = detectorObj.AddComponent<BoxCollider>();
                         var awcShape = detectorObj.AddComponent<BoxShape>();
+                        var awcCollider = detectorObj.AddComponent<BoxCollider>();
                         awcCollider.size = new Vector3(0.35f, 1.15f, 0.35f);
                         awcShape.CopySettingsFromCollider();
                         awcShape.SetCollisionMode(Shape.CollisionMode.Detector);
@@ -75,8 +74,8 @@ namespace YeetMod
                     }
                     else
                     {
-                        var wcCollider = detectorObj.AddComponent<BoxCollider>();
                         var wcShape = detectorObj.AddComponent<BoxShape>();
+                        var wcCollider = detectorObj.AddComponent<BoxCollider>();
                         wcCollider.size = new Vector3(0.4f, 0.1f, 0.4f);
                         wcShape.CopySettingsFromCollider();
                         wcShape.SetCollisionMode(Shape.CollisionMode.Detector);
@@ -84,24 +83,24 @@ namespace YeetMod
                     }
                     break;
                 case ItemType.SharedStone:
-                    var projStoneCollider = detectorObj.AddComponent<BoxCollider>();
                     var projStoneShape = detectorObj.AddComponent<BoxShape>();
+                    var projStoneCollider = detectorObj.AddComponent<BoxCollider>();
                     projStoneCollider.size = new Vector3(0.4f, 0.1f, 0.4f);
                     projStoneShape.CopySettingsFromCollider();
                     projStoneShape.SetCollisionMode(Shape.CollisionMode.Detector);
                     break;
                 case ItemType.ConversationStone:
-                    var convStoneCollider = detectorObj.AddComponent<SphereCollider>();
                     var convStoneShape = detectorObj.AddComponent<SphereShape>();
+                    var convStoneCollider = detectorObj.AddComponent<SphereCollider>();
                     convStoneCollider.radius = 0.24f;
                     convStoneShape.CopySettingsFromCollider();
                     convStoneShape.SetCollisionMode(Shape.CollisionMode.Detector);
                     break;
                 case ItemType.Lantern:
-                    var lanternCapsuleCollider = detectorObj.AddComponent<CapsuleCollider>();
                     var lanternCapsuleShape = detectorObj.AddComponent<CapsuleShape>();
-                    var lanternBoxCollider = detectorObj.AddComponent<BoxCollider>();
                     var lanternBoxShape = detectorObj.AddComponent<BoxShape>();
+                    var lanternCapsuleCollider = detectorObj.AddComponent<CapsuleCollider>();
+                    var lanternBoxCollider = detectorObj.AddComponent<BoxCollider>();
                     lanternCapsuleCollider.center = new Vector3(0, 0.35f, 0);
                     lanternCapsuleCollider.height = 0.4f;
                     lanternCapsuleCollider.radius = 0.2f;
@@ -112,8 +111,8 @@ namespace YeetMod
                     lanternBoxShape.SetCollisionMode(Shape.CollisionMode.Detector);
                     break;
                 case ItemType.SlideReel:
-                    var reelCollider = detectorObj.AddComponent<CapsuleCollider>();
                     var reelShape = detectorObj.AddComponent<CapsuleShape>();
+                    var reelCollider = detectorObj.AddComponent<CapsuleCollider>();
                     reelCollider.center = new Vector3(0, 0.2f, 0);
                     reelCollider.height = 0.37f;
                     reelCollider.radius = 0.4f;
@@ -121,10 +120,10 @@ namespace YeetMod
                     reelShape.SetCollisionMode(Shape.CollisionMode.Detector);
                     break;
                 case ItemType.DreamLantern:
-                    var dreamLanternCapsuleCollider = detectorObj.AddComponent<CapsuleCollider>();
                     var dreamLanternCapsuleShape = detectorObj.AddComponent<CapsuleShape>();
-                    var dreamLanternBoxCollider = detectorObj.AddComponent<BoxCollider>();
                     var dreamLanternBoxShape = detectorObj.AddComponent<BoxShape>();
+                    var dreamLanternCapsuleCollider = detectorObj.AddComponent<CapsuleCollider>();
+                    var dreamLanternBoxCollider = detectorObj.AddComponent<BoxCollider>();
                     dreamLanternCapsuleCollider.center = new Vector3(0.35f, 0, 0);
                     dreamLanternCapsuleCollider.height = 0.4f;
                     dreamLanternCapsuleCollider.radius = 0.37f;
@@ -136,10 +135,10 @@ namespace YeetMod
                     OrientDetector(Vector3.zero, Quaternion.Euler(0, 0, 90));
                     break;
                 case ItemType.VisionTorch:
-                    var torchCapsuleCollider = detectorObj.AddComponent<CapsuleCollider>();
                     var torchCapsuleShape = detectorObj.AddComponent<CapsuleShape>();
-                    var torchSphereCollider = detectorObj.AddComponent<SphereCollider>();
                     var torchSphereShape = detectorObj.AddComponent<SphereShape>();
+                    var torchCapsuleCollider = detectorObj.AddComponent<CapsuleCollider>();
+                    var torchSphereCollider = detectorObj.AddComponent<SphereCollider>();
                     torchCapsuleCollider.height = 1.8f;
                     torchCapsuleCollider.radius = 0.1f;
                     torchSphereCollider.center = new Vector3(0, 0.9f, 0.05f);
@@ -153,8 +152,8 @@ namespace YeetMod
                     detectorObj.layer = LayerMask.NameToLayer("AdvancedDetector");
                     switchedFromInteractible = attachedItem.gameObject.layer == LayerMask.NameToLayer("Interactible");
                     if (switchedFromInteractible) attachedItem.gameObject.layer = LayerMask.NameToLayer("Default");
-                    detectorObj.AddComponent<SphereCollider>();
                     detectorObj.AddComponent<SphereShape>().SetCollisionMode(Shape.CollisionMode.Detector);
+                    detectorObj.AddComponent<SphereCollider>();
                     break;
             }
         }
