@@ -15,33 +15,47 @@ namespace YeetMod
             yeetSpeedLimit = 50;
         private float lastButtonPressTime = float.NegativeInfinity;
         private bool isDoublePressing;
-
-        public static readonly ScreenPrompt YeetPrompt = new(InputLibrary.interact, "<CMD> " + "<color=orange>(x2) (Hold) </color> " + "Throw Item");
+        private ScreenPrompt yeetPrompt;
 
 
         private void Awake() => Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
 
+        private void Start()
+        {
+            LoadManager.OnCompleteSceneLoad += (scene, loadScene) =>
+            {
+                if (loadScene is not (OWScene.SolarSystem or OWScene.EyeOfTheUniverse)) return;
+                ModHelper.Events.Unity.FireOnNextUpdate(() =>
+                {
+                    yeetPrompt = new(InputLibrary.interact, "<CMD> " + "<color=orange>(x2) (Hold) </color> " + "Throw Item");
+                    Locator.GetPromptManager().AddScreenPrompt(yeetPrompt, PromptPosition.LowerLeft);
+                });
+            };
+        }
+
         private void Update()
         {
-            // yes its unoptimized. in practice it doesnt matter
-            YeetPrompt.SetVisibility(false);
-            if (Locator.GetToolModeSwapper()?.GetToolMode() != ToolMode.Item) return;
-            YeetPrompt.SetVisibility(true);
+            if (Locator.GetPromptManager() == null) return;
+            yeetPrompt.SetVisibility(false);
 
-            if (OWInput.IsNewlyPressed(InputLibrary.interact, InputMode.Character))
+            if (!OWInput.IsInputMode(InputMode.Character)) return;
+            if (Locator.GetToolModeSwapper()?.GetToolMode() != ToolMode.Item) return;
+            yeetPrompt.SetVisibility(true);
+
+            if (OWInput.IsNewlyPressed(InputLibrary.interact))
             {
                 if (Time.time - lastButtonPressTime <= doublePressTimeLimit) isDoublePressing = true;
                 lastButtonPressTime = Time.time;
             }
-            else if (OWInput.IsNewlyReleased(InputLibrary.interact, InputMode.Character) && isDoublePressing)
+            else if (OWInput.IsNewlyReleased(InputLibrary.interact) && isDoublePressing)
             {
                 isDoublePressing = false;
                 Yeet(Time.time - lastButtonPressTime);
             }
 
-            if (CheckForObstructed()) YeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.GrayedOut);
-            else if (isDoublePressing) YeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.Attention);
-            else YeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.Normal);
+            if (CheckForObstructed()) yeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.GrayedOut);
+            else if (isDoublePressing) yeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.Attention);
+            else yeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.Normal);
         }
 
         private bool CheckForObstructed()
