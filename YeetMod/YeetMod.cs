@@ -16,12 +16,17 @@ namespace YeetMod
         private float lastButtonPressTime = float.NegativeInfinity;
         private bool isDoublePressing;
 
+        public static readonly ScreenPrompt YeetPrompt = new(InputLibrary.interact, "<CMD> " + "<color=orange>(x2) (Hold) </color> " + "Throw Item");
+
 
         private void Awake() => Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
 
         private void Update()
         {
+            // yes its unoptimized. in practice it doesnt matter
+            YeetPrompt.SetVisibility(false);
             if (Locator.GetToolModeSwapper()?.GetToolMode() != ToolMode.Item) return;
+            YeetPrompt.SetVisibility(true);
 
             if (OWInput.IsNewlyPressed(InputLibrary.interact, InputMode.Character))
             {
@@ -34,9 +39,9 @@ namespace YeetMod
                 Yeet(Time.time - lastButtonPressTime);
             }
 
-            if (CheckForObstructed()) Patches.YeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.GrayedOut);
-            else if (isDoublePressing) Patches.YeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.Attention);
-            else Patches.YeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.Normal);
+            if (CheckForObstructed()) YeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.GrayedOut);
+            else if (isDoublePressing) YeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.Attention);
+            else YeetPrompt.SetDisplayState(ScreenPrompt.DisplayState.Normal);
         }
 
         private bool CheckForObstructed()

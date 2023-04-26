@@ -5,20 +5,22 @@ namespace YeetMod
     [HarmonyPatch]
     public class Patches
     {
-        public static ScreenPrompt YeetPrompt = new(InputLibrary.interact, "<CMD> " + "<color=orange>(x2) (Hold) </color> " + "Throw Item");
-
-        [HarmonyPostfix] 
-        [HarmonyPatch(typeof(PlayerTool), nameof(PlayerTool.EquipTool))]
-        public static void PlayerTool_EquipTool_PostFix(PlayerTool __instance)
-        {
-            if (__instance is ItemTool) Locator.GetPromptManager().AddScreenPrompt(YeetPrompt, PromptPosition.LowerLeft, OWInput.IsInputMode(InputMode.Character));
-        }
+        // a bit silly
 
         [HarmonyPostfix]
-        [HarmonyPatch(typeof(OWItem), nameof(OWItem.DropItem))]
-        public static void OWItem_DropItem_PostFix()
+        [HarmonyPatch(typeof(Locator), nameof(Locator.LocateSceneObjects))]
+        public static void Locator_LocateSceneObjects_Postfix()
         {
-            Locator.GetPromptManager().RemoveScreenPrompt(YeetPrompt);
+            if (LoadManager.GetCurrentScene() != OWScene.SolarSystem) return;
+            Locator.GetPromptManager().AddScreenPrompt(YeetMod.YeetPrompt, PromptPosition.LowerLeft);
+        }
+
+        [HarmonyPrefix]
+        [HarmonyPatch(typeof(Locator), nameof(Locator.ClearReferences))]
+        public static void Locator_ClearReferences_Prefix()
+        {
+            if (LoadManager.GetCurrentScene() != OWScene.SolarSystem) return;
+            Locator.GetPromptManager().RemoveScreenPrompt(YeetMod.YeetPrompt);
         }
     }
 }
