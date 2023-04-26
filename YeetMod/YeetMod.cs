@@ -43,7 +43,7 @@ namespace YeetMod
                 if (Time.time - lastButtonPressTime <= doublePressTimeLimit) isDoublePressing = true;
                 lastButtonPressTime = Time.time;
             }
-            else if (OWInput.IsNewlyReleased(InputLibrary.interact) && isDoublePressing)
+            else if (OWInput.IsNewlyReleased(InputLibrary.interact, InputMode.Character) && isDoublePressing)
             {
                 isDoublePressing = false;
                 Yeet(Time.time - lastButtonPressTime);
