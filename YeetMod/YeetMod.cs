@@ -30,7 +30,6 @@ namespace YeetMod
         {
             if (Locator.GetPromptManager() == null) return;
 
-            //since the else-if prevents the double press from starting and resolving on the same frame it's fine to put these screen prompt state changes first
             yeetPrompt.SetVisibility(OWInput.IsInputMode(InputMode.Character) && Locator.GetToolModeSwapper().GetToolMode() == ToolMode.Item);
             if (yeetPrompt.IsVisible())
             {
@@ -42,7 +41,7 @@ namespace YeetMod
             }
             else
             {
-                // reset double pressing flag so we dont accidentally count it if we arent holding an item
+                // reset everything so we dont accidentally count it if we arent holding an item
                 lastButtonPressTime = float.NegativeInfinity;
                 isDoublePressing = false;
             }
