@@ -26,8 +26,7 @@ namespace YeetMod
         private void Awake()
         {
             detectorObj.layer = LayerMask.NameToLayer("PhysicalDetector");
-            gameObject.layer = LayerMask.NameToLayer("PhysicalDetector");
-            gameObject.tag = "DynamicPropDetector";
+            detectorObj.tag = "DynamicPropDetector";
 
             detectorObj.transform.SetParent(transform, false);
             owRigidbody = gameObject.AddComponent<OWRigidbody>();
