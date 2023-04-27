@@ -43,6 +43,7 @@ namespace YeetMod
             else
             {
                 // reset double pressing flag so we dont accidentally count it if we arent holding an item
+                lastButtonPressTime = float.NegativeInfinity;
                 isDoublePressing = false;
             }
 
