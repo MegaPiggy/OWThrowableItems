@@ -58,7 +58,11 @@ namespace YeetMod
             }
         }
 
-        private bool CheckForObstructed() => Physics.SphereCast(new Ray(Locator.GetPlayerCamera().transform.position, Locator.GetPlayerCamera().transform.forward), 0.5f, 2, OWLayerMask.physicalMask);
+        private bool CheckForObstructed()
+        {
+            var ray = new Ray(Locator.GetPlayerCamera().transform.position - 0.5f * Locator.GetPlayerCamera().transform.forward, Locator.GetPlayerCamera().transform.forward);
+            return Physics.SphereCast(ray, 0.5f, 2.5f, OWLayerMask.physicalMask);
+        }
 
         private static void Yeet(float heldButtonTime)
         {
