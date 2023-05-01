@@ -1,4 +1,6 @@
-﻿using OWML.ModHelper;
+﻿using HarmonyLib;
+using OWML.ModHelper;
+using System.Reflection;
 using UnityEngine;
 
 namespace YeetMod
@@ -18,6 +20,8 @@ namespace YeetMod
 
         private void Start()
         {
+            Harmony.CreateAndPatchAll(Assembly.GetExecutingAssembly());
+
             yeetPrompt = new(InputLibrary.interact, "<CMD> " + "<color=orange>(x2) (Hold) </color> " + "Throw Item");
 
             LoadManager.OnCompleteSceneLoad += (scene, loadScene) =>
