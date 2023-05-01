@@ -16,50 +16,44 @@ namespace YeetMod
         public static ItemYeetSocket Create(OWItem item, Vector3 startingPosition, float startingVelocity)
         {
             var socketObj = new GameObject("ItemYeetBody");
-            socketObj.SetActive(false);
             socketObj.transform.position = startingPosition;
-            socketObj.AddComponent<OWAudioSource>().SetTrack(OWAudioMixer.TrackName.Environment);
             var socket = socketObj.AddComponent<ItemYeetSocket>();
             socket.attachedItem = item;
             socket.initialVelocity = startingVelocity;
-            socketObj.SetActive(true);
             return socket;
         }
 
 
-        private void Awake()
+        private void Start()
         {
             detectorObj.layer = LayerMask.NameToLayer("PhysicalDetector");
             detectorObj.tag = "DynamicPropDetector";
 
-            detectorObj.transform.SetParent(transform, false);
             owRigidbody = gameObject.AddComponent<OWRigidbody>();
             AddShapesAndColliders();
+            detectorObj.transform.SetParent(attachedItem.transform, false);
             detectorObj.AddComponent<DynamicForceDetector>();
             detectorObj.AddComponent<DynamicFluidDetector>();
-            detectorObj.transform.SetParent(attachedItem.transform, false);
 
             foreach (var volume in Locator.GetPlayerBody()._attachedForceDetector._activeVolumes) owRigidbody._attachedForceDetector.AddVolume(volume);
             foreach (var volume in Locator.GetPlayerBody()._attachedFluidDetector._activeVolumes) owRigidbody._attachedFluidDetector.AddVolume(volume);
             owRigidbody._attachedFluidDetector._buoyancy = Locator.GetProbe().GetOWRigidbody()._attachedFluidDetector._buoyancy;
             owRigidbody._attachedFluidDetector._splashEffects = Locator.GetProbe().GetOWRigidbody()._attachedFluidDetector._splashEffects;
 
+            gameObject.SetActive(false);
             gameObject.AddComponent<ImpactSensor>();
             var objectImpactAudio = gameObject.AddComponent<ObjectImpactAudio>();
             objectImpactAudio._minPitch = 0.4f;
             objectImpactAudio._maxPitch = 0.6f;
             objectImpactAudio.Reset();
+            gameObject.SetActive(true);
 
             attachedItem.onPickedUp += OnPickUpItem;
 
             owRigidbody._rigidbody.angularDrag = 5;
             owRigidbody.SetMass(0.001f);
-            owRigidbody.SetVelocity(Locator.GetPlayerBody().GetPointVelocity(transform.position) + Locator.GetPlayerCamera().transform.forward * initialVelocity);
-        }
-
-        private void Start() //stuff that has to happen after DropItemInstantly
-        {
             owRigidbody.SetCenterOfMass(owRigidbody.transform.InverseTransformPoint(detectorObj.transform.position));
+            owRigidbody.SetVelocity(Locator.GetPlayerBody().GetPointVelocity(transform.position) + Locator.GetPlayerCamera().transform.forward * initialVelocity);
         }
 
         private void AddShapesAndColliders()
@@ -117,9 +111,9 @@ namespace YeetMod
 
                 case ItemType.ConversationStone:
                     var convStoneShape = detectorObj.AddComponent<SphereShape>();
-                    var convStoneCollider = detectorObj.AddComponent<SphereCollider>();
-                    convStoneCollider.center = new Vector3(0, 0.12f, 0);
-                    convStoneCollider.radius = 0.24f;
+                    var convStoneDetectorCollider = detectorObj.AddComponent<SphereCollider>();
+                    convStoneDetectorCollider.center = new Vector3(0, 0.12f, 0);
+                    convStoneDetectorCollider.radius = 0.24f;
                     convStoneShape.CopySettingsFromCollider();
                     convStoneShape.SetCollisionMode(Shape.CollisionMode.Detector);
 
@@ -134,14 +128,14 @@ namespace YeetMod
                     break;
 
                 case ItemType.Lantern:
-                    var lanternCapsuleShape = detectorObj.AddComponent<CapsuleShape>();
-                    var lanternCapsuleCollider = detectorObj.AddComponent<CapsuleCollider>();
-                    lanternCapsuleCollider.center = new Vector3(0, 0.15f, 0);
-                    lanternCapsuleCollider.height = 0.4f;
-                    lanternCapsuleCollider.radius = 0.2f;
-                    lanternCapsuleShape.CopySettingsFromCollider();
-                    lanternCapsuleShape.height += 2 * lanternCapsuleShape.radius;
-                    lanternCapsuleShape.SetCollisionMode(Shape.CollisionMode.Detector);
+                    var lanternShape = detectorObj.AddComponent<CapsuleShape>();
+                    var lanternColliderMain = detectorObj.AddComponent<CapsuleCollider>();
+                    lanternColliderMain.center = new Vector3(0, 0.15f, 0);
+                    lanternColliderMain.height = 0.4f;
+                    lanternColliderMain.radius = 0.2f;
+                    lanternShape.CopySettingsFromCollider();
+                    lanternShape.height += 2 * lanternShape.radius;
+                    lanternShape.SetCollisionMode(Shape.CollisionMode.Detector);
 
                     var lanternColliderObj = new GameObject("YeetCollider");
                     var lanternColliderBase = lanternColliderObj.AddComponent<MeshCollider>();
@@ -176,9 +170,9 @@ namespace YeetMod
                     dreamLanternShape.height = nonfunctioning ? 4 : 5;
                     dreamLanternShape.SetCollisionMode(Shape.CollisionMode.Detector);
 
-                    var dreamLanternCollider = detectorObj.AddComponent<MeshCollider>();
-                    dreamLanternCollider.sharedMesh = cylinderMesh;
-                    dreamLanternCollider.convex = true;
+                    var dreamLanternMeshCollider = detectorObj.AddComponent<MeshCollider>();
+                    dreamLanternMeshCollider.sharedMesh = cylinderMesh;
+                    dreamLanternMeshCollider.convex = true;
                     detectorObj.transform.localScale = nonfunctioning ? new Vector3(0.42f, 0.25f, 0.4f) : new Vector3(0.7f, 0.2f, 0.7f);
                     if (nonfunctioning)
                     {
