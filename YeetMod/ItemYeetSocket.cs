@@ -113,14 +113,19 @@ namespace YeetMod
                     var convStoneShape = detectorObj.AddComponent<SphereShape>();
                     var convStoneDetectorCollider = detectorObj.AddComponent<SphereCollider>();
                     convStoneDetectorCollider.center = new Vector3(0, 0.12f, 0);
-                    convStoneDetectorCollider.radius = 0.24f;
+                    convStoneDetectorCollider.radius = 0.3f;
                     convStoneShape.CopySettingsFromCollider();
                     convStoneShape.SetCollisionMode(Shape.CollisionMode.Detector);
+                    detectorObj.layer = LayerMask.NameToLayer("AdvancedDetector");
 
                     var convStoneColliderObj = new GameObject("YeetCollider");
-                    var convStonePhysicalCollider = convStoneColliderObj.AddComponent<SphereCollider>();
-                    convStonePhysicalCollider.center = new Vector3(0, 0.12f, 0);
-                    convStonePhysicalCollider.radius = 0.3f;
+                    foreach (var meshFilter in attachedItem.GetComponentsInChildren<MeshFilter>()) if (!meshFilter.gameObject.name.Contains("Decal"))
+                    {
+                        var collider = convStoneColliderObj.AddComponent<MeshCollider>();
+                        collider.sharedMesh = meshFilter.sharedMesh;
+                        collider.convex = true;
+                    }
+                    convStoneColliderObj.transform.localPosition = new Vector3(0, 0.12f, 0);
                     convStoneColliderObj.transform.SetParent(detectorObj.transform, false);
                     convStoneColliderObj.layer = LayerMask.NameToLayer("Ignore Raycast");
 
