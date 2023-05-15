@@ -8,6 +8,7 @@ namespace YeetMod
 
         private OWRigidbody owRigidbody;
         private GameObject detectorObj = new("YeetDetector");
+        private SectorDetector sectorDetector;
         private OWItem attachedItem;
         private bool switchedFromInteractible;
         private float initialVelocity;
@@ -24,7 +25,7 @@ namespace YeetMod
         }
 
 
-        private void Start()
+        private void Start() //runs after the item was attached
         {
             detectorObj.layer = LayerMask.NameToLayer("PhysicalDetector");
             detectorObj.tag = "DynamicPropDetector";
@@ -39,6 +40,18 @@ namespace YeetMod
             foreach (var volume in Locator.GetPlayerBody()._attachedFluidDetector._activeVolumes) owRigidbody._attachedFluidDetector.AddVolume(volume);
             owRigidbody._attachedFluidDetector._buoyancy = Locator.GetProbe().GetOWRigidbody()._attachedFluidDetector._buoyancy;
             owRigidbody._attachedFluidDetector._splashEffects = Locator.GetProbe().GetOWRigidbody()._attachedFluidDetector._splashEffects;
+
+            sectorDetector = detectorObj.AddComponent<SectorDetector>();
+            sectorDetector.SetOccupantType(DynamicOccupant.Environment);
+
+            owRigidbody._childColliders = new Collider[0]; //prevent collision from being deactivated on suspend so this doesn't get unregistered as a sector occupant
+            sectorDetector._attachedRigidbody.OnSuspendOWRigidbody -= sectorDetector.OnAttachedRigidbodySuspended;
+            sectorDetector._attachedRigidbody.OnPreUnsuspendOWRigidbody -= sectorDetector.OnAttachedRigidbodyResumed;
+
+            Locator.GetPlayerSectorDetector().AddDetectorToAllOccupiedSectors(sectorDetector);
+            sectorDetector.OnEnterSector += OnEnterSector;
+            sectorDetector.OnExitSector += SimulateInLastEntered;
+            SimulateInLastEntered(null);
 
             gameObject.SetActive(false);
             gameObject.AddComponent<ImpactSensor>();
@@ -240,7 +253,27 @@ namespace YeetMod
             detectorObj.transform.localRotation = localRot;
         }
 
-        private void OnPickUpItem(OWItem item)
+        private void OnEnterSector(Sector sector)
+        {
+            sector = sector?.GetRootSector();
+            UpdateSimulateInSector(sector);
+        }
+
+        private void SimulateInLastEntered(Sector _) 
+        { 
+            UpdateSimulateInSector(sectorDetector.GetLastEnteredSector()?.GetRootSector()); 
+        }
+
+        private void UpdateSimulateInSector(Sector sector) 
+        {
+            if (owRigidbody._simulateInSector == sector) return;
+
+            if (owRigidbody._simulateInSector != null) owRigidbody._simulateInSector.OnSectorOccupantsUpdated -= owRigidbody.OnSectorOccupantsUpdated;
+            if (sector != null) sector.OnSectorOccupantsUpdated += owRigidbody.OnSectorOccupantsUpdated;
+            owRigidbody._simulateInSector = sector;
+        }
+
+        private void OnPickUpItem(OWItem _)
         {
             attachedItem.onPickedUp -= OnPickUpItem;
             if (switchedFromInteractible) attachedItem.gameObject.layer = LayerMask.NameToLayer("Interactible");
