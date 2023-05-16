@@ -43,7 +43,7 @@ namespace YeetMod
             owRigidbody._attachedFluidDetector._splashEffects = Locator.GetProbe().GetOWRigidbody()._attachedFluidDetector._splashEffects;
 
             sectorDetector = detectorObj.AddComponent<SectorDetector>();
-            sectorDetector.SetOccupantType(DynamicOccupant.Ship); //load collision only
+            sectorDetector.SetOccupantType(DynamicOccupant.Environment);
             Locator.GetPlayerSectorDetector().AddDetectorToAllOccupiedSectors(sectorDetector);
 
             gameObject.SetActive(false);
