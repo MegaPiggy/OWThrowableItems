@@ -34,9 +34,9 @@ namespace YeetMod
         {
             if (Locator.GetPromptManager() == null) return;
 
-            yeetPrompt.SetVisibility(OWInput.IsInputMode(InputMode.Character) && Locator.GetToolModeSwapper().GetToolMode() == ToolMode.Item);
-            if (yeetPrompt.IsVisible())
+            if (OWInput.IsInputMode(InputMode.Character) && Locator.GetToolModeSwapper().GetToolMode() == ToolMode.Item)
             {
+                yeetPrompt.SetVisibility(true);
                 yeetPrompt.SetDisplayState(
                     CheckForObstructed() ? ScreenPrompt.DisplayState.GrayedOut :
                     isDoublePressing ? ScreenPrompt.DisplayState.Attention :
@@ -46,6 +46,7 @@ namespace YeetMod
             else
             {
                 // reset everything so we dont accidentally count it if we arent holding an item
+                yeetPrompt.SetVisibility(false);
                 lastButtonPressTime = float.NegativeInfinity;
                 isDoublePressing = false;
             }
@@ -78,8 +79,7 @@ namespace YeetMod
 
             var yeetSpeed = heldButtonTime <= itemDropTimeLimit ? 0 : Mathf.Clamp(heldButtonTime * yeetSpeedIncreaseRate, 0, yeetSpeedLimit);
             var playerCameraTransform = Locator.GetPlayerCamera().transform;
-            var socket = ItemYeetSocket.Create(itemTool.GetHeldItem(), playerCameraTransform.position + playerCameraTransform.forward * 2, yeetSpeed);
-            socket.transform.rotation = playerCameraTransform.rotation;
+            var socket = ItemYeetSocket.Create(itemTool.GetHeldItem(), playerCameraTransform.position + playerCameraTransform.forward * 2, playerCameraTransform.rotation, yeetSpeed);
             itemTool.DropItemInstantly(null, socket.transform);
 
             Locator.GetToolModeSwapper().UnequipTool();

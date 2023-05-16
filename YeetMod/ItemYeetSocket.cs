@@ -14,10 +14,11 @@ namespace YeetMod
         private float initialVelocity;
 
 
-        public static ItemYeetSocket Create(OWItem item, Vector3 startingPosition, float startingVelocity)
+        public static ItemYeetSocket Create(OWItem item, Vector3 startingPosition, Quaternion startingRotation, float startingVelocity)
         {
             var socketObj = new GameObject("ItemYeetBody");
             socketObj.transform.position = startingPosition;
+            socketObj.transform.rotation = startingRotation;
             var socket = socketObj.AddComponent<ItemYeetSocket>();
             socket.attachedItem = item;
             socket.initialVelocity = startingVelocity;
@@ -44,14 +45,14 @@ namespace YeetMod
             sectorDetector = detectorObj.AddComponent<SectorDetector>();
             sectorDetector.SetOccupantType(DynamicOccupant.Environment);
 
-            owRigidbody._childColliders = new Collider[0]; //prevent collision from being deactivated on suspend so this doesn't get unregistered as a sector occupant
+            owRigidbody._childColliders = new Collider[0]; //prevent colliders from being disabled on suspend so the detectors don't get unregistered as sector/volume occupants
             sectorDetector._attachedRigidbody.OnSuspendOWRigidbody -= sectorDetector.OnAttachedRigidbodySuspended;
             sectorDetector._attachedRigidbody.OnPreUnsuspendOWRigidbody -= sectorDetector.OnAttachedRigidbodyResumed;
 
             Locator.GetPlayerSectorDetector().AddDetectorToAllOccupiedSectors(sectorDetector);
-            sectorDetector.OnEnterSector += OnEnterSector;
-            sectorDetector.OnExitSector += SimulateInLastEntered;
-            SimulateInLastEntered(null);
+            sectorDetector.OnEnterSector += UpdateSimulateInSector;
+            sectorDetector.OnExitSector += UpdateSimulateInSector;
+            UpdateSimulateInSector(null);
 
             gameObject.SetActive(false);
             gameObject.AddComponent<ImpactSensor>();
@@ -66,7 +67,7 @@ namespace YeetMod
             owRigidbody._rigidbody.angularDrag = 5;
             owRigidbody.SetMass(0.001f);
             owRigidbody.SetCenterOfMass(owRigidbody.transform.InverseTransformPoint(detectorObj.transform.position));
-            owRigidbody.SetVelocity(Locator.GetPlayerBody().GetPointVelocity(transform.position) + Locator.GetPlayerCamera().transform.forward * initialVelocity);
+            owRigidbody.SetVelocity(Locator.GetPlayerBody().GetPointVelocity(transform.position) + transform.forward * initialVelocity);
         }
 
         private void AddShapesAndColliders()
@@ -253,24 +254,15 @@ namespace YeetMod
             detectorObj.transform.localRotation = localRot;
         }
 
-        private void OnEnterSector(Sector sector)
+        private void UpdateSimulateInSector(Sector _) 
         {
-            sector = sector?.GetRootSector();
-            UpdateSimulateInSector(sector);
-        }
-
-        private void SimulateInLastEntered(Sector _) 
-        { 
-            UpdateSimulateInSector(sectorDetector.GetLastEnteredSector()?.GetRootSector()); 
-        }
-
-        private void UpdateSimulateInSector(Sector sector) 
-        {
+            var sector = sectorDetector.GetLastEnteredSector()?.GetRootSector();
             if (owRigidbody._simulateInSector == sector) return;
 
             if (owRigidbody._simulateInSector != null) owRigidbody._simulateInSector.OnSectorOccupantsUpdated -= owRigidbody.OnSectorOccupantsUpdated;
-            if (sector != null) sector.OnSectorOccupantsUpdated += owRigidbody.OnSectorOccupantsUpdated;
             owRigidbody._simulateInSector = sector;
+            if (sector != null) sector.OnSectorOccupantsUpdated += owRigidbody.OnSectorOccupantsUpdated;
+            else if (owRigidbody._suspended) owRigidbody.Unsuspend();
         }
 
         private void OnPickUpItem(OWItem _)
