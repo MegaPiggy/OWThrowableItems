@@ -43,16 +43,8 @@ namespace YeetMod
             owRigidbody._attachedFluidDetector._splashEffects = Locator.GetProbe().GetOWRigidbody()._attachedFluidDetector._splashEffects;
 
             sectorDetector = detectorObj.AddComponent<SectorDetector>();
-            sectorDetector.SetOccupantType(DynamicOccupant.Environment);
-
-            owRigidbody._childColliders = new Collider[0]; //prevent colliders from being disabled on suspend so the detectors don't get unregistered as sector/volume occupants
-            sectorDetector._attachedRigidbody.OnSuspendOWRigidbody -= sectorDetector.OnAttachedRigidbodySuspended;
-            sectorDetector._attachedRigidbody.OnPreUnsuspendOWRigidbody -= sectorDetector.OnAttachedRigidbodyResumed;
-
+            sectorDetector.SetOccupantType(DynamicOccupant.Ship); //load collision only
             Locator.GetPlayerSectorDetector().AddDetectorToAllOccupiedSectors(sectorDetector);
-            sectorDetector.OnEnterSector += UpdateSimulateInSector;
-            sectorDetector.OnExitSector += UpdateSimulateInSector;
-            UpdateSimulateInSector(null);
 
             gameObject.SetActive(false);
             gameObject.AddComponent<ImpactSensor>();
@@ -252,17 +244,6 @@ namespace YeetMod
         {
             detectorObj.transform.localPosition = localPos;
             detectorObj.transform.localRotation = localRot;
-        }
-
-        private void UpdateSimulateInSector(Sector _) 
-        {
-            var sector = sectorDetector.GetLastEnteredSector()?.GetRootSector();
-            if (owRigidbody._simulateInSector == sector) return;
-
-            if (owRigidbody._simulateInSector != null) owRigidbody._simulateInSector.OnSectorOccupantsUpdated -= owRigidbody.OnSectorOccupantsUpdated;
-            owRigidbody._simulateInSector = sector;
-            if (sector != null) sector.OnSectorOccupantsUpdated += owRigidbody.OnSectorOccupantsUpdated;
-            else if (owRigidbody._suspended) owRigidbody.Unsuspend();
         }
 
         private void OnPickUpItem(OWItem _)
