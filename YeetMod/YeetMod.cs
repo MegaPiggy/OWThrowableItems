@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace YeetMod
 {
-    public class YeetMod : ModBehaviour
+    public class YeetMod : ModBehaviour, ILateInitializer
     {
         private static ScreenPrompt yeetPrompt;
         // not const so theyre editable in UE
@@ -24,10 +24,20 @@ namespace YeetMod
 
             yeetPrompt = new(InputLibrary.interact, "<CMD> " + "<color=orange>(x2) (Hold) </color> " + "Throw Item");
 
-            LoadManager.OnCompleteSceneLoad += (scene, loadScene) =>
+            LoadManager.OnCompleteSceneLoad += OnCompleteSceneLoad;
+        }
+
+        private void OnCompleteSceneLoad(OWScene scene, OWScene loadScene)
+        {
+            if (loadScene is OWScene.SolarSystem or OWScene.EyeOfTheUniverse)
             {
-                if (loadScene is OWScene.SolarSystem or OWScene.EyeOfTheUniverse) FindObjectOfType<PromptManager>().AddScreenPrompt(yeetPrompt, PromptPosition.LowerLeft);
-            };
+                LateInitializerManager.RegisterLateInitializer(this);
+            }
+        }
+
+        public void LateInitialize()
+        {
+            Locator.GetPromptManager().AddScreenPrompt(yeetPrompt, PromptPosition.LowerLeft);
         }
 
         private void Update()
