@@ -5,7 +5,7 @@ using UnityEngine;
 
 namespace YeetMod
 {
-    public class YeetMod : ModBehaviour, ILateInitializer
+    public class YeetMod : ModBehaviour
     {
         private static ScreenPrompt yeetPrompt;
         // not const so theyre editable in UE
@@ -31,13 +31,8 @@ namespace YeetMod
         {
             if (loadScene is OWScene.SolarSystem or OWScene.EyeOfTheUniverse)
             {
-                LateInitializerManager.RegisterLateInitializer(this);
+                ModHelper.Events.Unity.FireOnNextUpdate(() => Locator.GetPromptManager().AddScreenPrompt(yeetPrompt, PromptPosition.LowerLeft));
             }
-        }
-
-        public void LateInitialize()
-        {
-            Locator.GetPromptManager().AddScreenPrompt(yeetPrompt, PromptPosition.LowerLeft);
         }
 
         private void Update()
