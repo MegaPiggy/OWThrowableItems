@@ -31,6 +31,7 @@ namespace YeetMod
         {
             if (loadScene is OWScene.SolarSystem or OWScene.EyeOfTheUniverse)
             {
+                yeetPrompt._isVisible = false;
                 ModHelper.Events.Unity.FireOnNextUpdate(() => Locator.GetPromptManager().AddScreenPrompt(yeetPrompt, PromptPosition.LowerLeft));
             }
         }
