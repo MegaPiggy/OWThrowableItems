@@ -24,8 +24,9 @@ namespace YeetMod
 
             yeetPrompt = new(InputLibrary.interact, "<CMD> " + "<color=orange>(x2) (Hold) </color> " + "Throw Item");
 
-            LoadManager.OnCompleteSceneLoad += (scene, loadScene) =>
+            LoadManager.OnCompleteSceneLoad += (_, loadScene) =>
             {
+                yeetPrompt._isVisible = false;
                 if (loadScene is OWScene.SolarSystem or OWScene.EyeOfTheUniverse) FindObjectOfType<PromptManager>().AddScreenPrompt(yeetPrompt, PromptPosition.LowerLeft);
             };
         }
